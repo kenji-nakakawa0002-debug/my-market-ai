@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="株価・指数・ETF・ニュース・メモ・振り返りを整理する自分専用の投資情報ノートです。">
+  <title>My Market AI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#" aria-label="My Market AI ホーム">
+      <span class="brand-mark" aria-hidden="true">M</span><span>My Market AI</span>
+    </a>
+    <div class="header-actions">
+      <span class="demo-label"><i></i> <span id="dataModeLabel">サンプル表示</span></span>
+      <button class="theme-button" id="themeButton" type="button" aria-label="ダークモードに切り替える" aria-pressed="false"><span class="theme-icon" aria-hidden="true">☾</span><span class="theme-text">ダーク</span></button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-message">
+        <p class="eyebrow">MY MARKET JOURNAL</p>
+        <h1>見るだけでなく、<br><span>考えた理由を残す。</span></h1>
+        <p class="hero-copy">株価・指数・ETF・ニュースと、自分の気づきをひとつに。あとから振り返れる、自分専用の投資情報整理ノートです。</p>
+      </div>
+      <div class="hero-stats" aria-label="ノートの状況">
+        <div><strong id="stockCount">0</strong><span>登録対象</span></div>
+        <div><strong id="noteCount">0</strong><span>メモ記録</span></div>
+        <div><strong id="lastUpdated">--:--</strong><span>価格更新</span></div>
+      </div>
+    </section>
+
+    <section class="notice" aria-label="免責事項">
+      <span class="notice-icon" aria-hidden="true">i</span>
+      <p><strong>本サービスは投資助言ではありません。売買判断は利用者ご自身で行ってください。</strong><br>価格・チャート・ニュース・AI要約等は、情報整理と記録のための表示です。表示情報の正確性、完全性、最新性は保証されません。</p>
+    </section>
+
+    <details class="panel data-management">
+      <summary><span><span class="data-management-icon" aria-hidden="true">⇩</span> データ管理</span><small>バックアップ・復元・CSV出力</small></summary>
+      <div class="data-management-body">
+        <div class="backup-warning" id="backupWarning">
+          <strong>バックアップファイルの取り扱いにご注意ください。</strong>
+          <p>ファイルにはウォッチ理由やメモが含まれます。安全な場所へ保管してください。復元すると、現在このブラウザに保存されているデータを上書きします。</p>
+        </div>
+        <div class="data-management-actions" aria-describedby="backupWarning">
+          <button id="jsonExportButton" type="button">JSONバックアップ</button>
+          <label class="import-button" for="jsonImportInput">JSONから復元<input id="jsonImportInput" class="backup-file-input" type="file" accept="application/json,.json"></label>
+          <button id="csvExportButton" type="button">CSV出力</button>
+        </div>
+        <p class="data-management-status" id="dataManagementStatus" role="status" aria-live="polite">定期的なバックアップをおすすめします。</p>
+      </div>
+    </details>
+
+    <section class="panel register-section" aria-labelledby="registerTitle">
+      <div class="section-heading">
+        <div><p class="eyebrow">ADD TO MY NOTE</p><h2 id="registerTitle">記録する対象を追加</h2></div>
+        <p>任意の銘柄コードを自分のノートへ登録できます</p>
+      </div>
+      <form id="stockForm" class="stock-form note-register-form" autocomplete="off">
+        <label class="symbol-field">
+          <span>銘柄コード</span>
+          <div class="autocomplete">
+            <input id="symbolInput" name="symbol" type="text" maxlength="30" placeholder="例：NVDA、VOO、^GSPC" autocapitalize="characters" spellcheck="false" role="combobox" aria-autocomplete="list" aria-controls="suggestions" aria-expanded="false" required>
+            <ul id="suggestions" class="suggestions" role="listbox" hidden></ul>
+          </div>
+        </label>
+        <label class="name-field">
+          <span>表示名（任意）</span>
+          <input id="nameInput" name="name" type="text" maxlength="80" placeholder="未入力なら銘柄コードを表示">
+        </label>
+        <label>
+          <span>種類</span>
+          <select id="typeInput" name="type" aria-label="種類"><option>個別株</option><option>ETF</option><option>指数</option><option>その他</option></select>
+        </label>
+        <label class="initial-memo-field">
+          <span>最初のメモ（任意）</span>
+          <input id="initialMemoInput" name="initialMemo" type="text" maxlength="300" placeholder="なぜ気になったか、確認したいことなど">
+        </label>
+        <button class="primary-button" type="submit"><span aria-hidden="true">＋</span> ノートに追加</button>
+      </form>
+      <p class="form-hint" id="formMessage" role="status" aria-live="polite">登録対象とメモ履歴は、このブラウザ内だけに保存されます。</p>
+    </section>
+
+    <section class="watchlist-section" aria-labelledby="watchlistTitle">
+      <div class="section-heading watch-heading">
+        <div><p class="eyebrow">MARKET NOTEBOOK</p><h2 id="watchlistTitle">マイ・マーケットノート</h2></div>
+        <div class="live-status"><i></i><span>価格表示を自動更新</span></div>
+      </div>
+      <div id="watchlist" class="watchlist"></div>
+      <div id="emptyState" class="empty-state" hidden><span aria-hidden="true">✎</span><h3>まだノートがありません</h3><p>上のフォームから、気になる対象と理由を記録してみましょう。</p></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-copy"><strong>My Market AI</strong><span>投資情報を整理し、振り返るためのノート</span></div>
+    <nav class="footer-links" aria-label="サイト情報">
+      <a href="index.html" aria-current="page">トップ</a>
+      <a href="disclaimer.html">免責事項</a>
+      <a href="privacy.html">プライバシーポリシー</a>
+      <a href="terms.html">利用規約</a>
+    </nav>
+  </footer>
+
+  <template id="stockCardTemplate">
+    <article class="stock-card">
+      <div class="card-accent"></div>
+      <header class="card-header">
+        <div class="stock-identity"><span class="stock-avatar"></span><div><h3></h3><p class="stock-meta"></p><div class="stock-tags-preview"></div></div></div>
+        <div class="card-actions">
+          <button class="favorite-button" type="button" aria-label="お気に入りに追加" aria-pressed="false">☆</button>
+          <button class="remove-button" type="button" aria-label="ノートから削除">×</button>
+        </div>
+      </header>
+      <div class="data-error" role="alert" hidden>データ取得に失敗しました。時間をおいて再度お試しください。</div>
+
+      <details class="journal-details">
+        <summary><span><span class="block-icon">⌁</span> ウォッチ理由・タグ</span><span class="journal-summary"></span></summary>
+        <div class="journal-editor">
+          <label><span>ウォッチ理由</span><textarea class="watch-reason" maxlength="300" placeholder="なぜ継続して確認したいのかを記録…"></textarea></label>
+          <button class="watch-reason-save" type="button">理由を保存</button>
+          <form class="tag-form">
+            <label><span>タグ</span><input class="tag-input" type="text" maxlength="24" placeholder="例：長期、決算確認、半導体"></label>
+            <button type="submit">タグを追加</button>
+          </form>
+          <div class="tag-list" aria-label="登録済みタグ"></div>
+          <p class="journal-message" role="status" aria-live="polite"></p>
+        </div>
+      </details>
+
+      <section class="market-overview" aria-label="価格情報">
+        <div><p class="mini-label">現在価格 <span class="currency"></span> <span class="price-source">SAMPLE</span></p><p class="current-price"></p></div>
+        <div class="change-area"><p class="mini-label">前日比</p><div class="change-pill"></div></div>
+      </section>
+
+      <section class="chart-panel" aria-label="直近の価格チャート">
+        <div class="chart-heading">
+          <div><strong>過去の値動き</strong><span class="chart-data-source">SAMPLE</span></div>
+          <div class="chart-ranges" role="group" aria-label="チャート期間">
+            <button class="chart-range-button" type="button" data-range="1d" aria-pressed="false">1日</button>
+            <button class="chart-range-button" type="button" data-range="1w" aria-pressed="false">1週間</button>
+            <button class="chart-range-button" type="button" data-range="1m" aria-pressed="true">1か月</button>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas class="price-chart" role="img" aria-label="過去の価格推移を示す折れ線グラフ"></canvas>
+          <div class="chart-labels" aria-hidden="true"><span class="chart-high"></span><span class="chart-low"></span></div>
+        </div>
+      </section>
+
+      <section class="news-block">
+        <div class="block-title"><span class="block-icon">▤</span><strong>関連ニュース</strong><small>参考情報</small></div>
+        <ul class="news-list"></ul>
+        <div class="news-error" role="alert" hidden>ニュース取得に失敗しました。時間をおいて再度お試しください。</div>
+        <div class="fact-summary"><span>AI</span><div><strong>事実ベースの要約</strong><p></p></div></div>
+      </section>
+
+      <section class="notebook-block">
+        <div class="block-title notebook-title"><span class="block-icon">✎</span><strong>自分のメモ</strong><small class="card-note-count"></small></div>
+        <form class="note-form">
+          <div class="note-form-row">
+            <label><span>日付</span><input class="note-date" type="date" required></label>
+            <label><span>分類</span><select class="note-kind"><option>なぜ気になったか</option><option>確認したこと</option><option>次に確認したいこと</option><option>決算</option><option>配当</option><option>ニュース</option><option>その他</option></select></label>
+          </div>
+          <label><span>内容</span><textarea class="note-text" maxlength="500" placeholder="事実、気づき、次に確認したいことを記録…" required></textarea></label>
+          <button class="note-add-button" type="submit">メモを履歴に追加</button>
+        </form>
+        <div class="history-heading">
+          <div><strong>メモ履歴</strong><span class="history-stats"></span></div>
+          <label class="note-filter-label"><span>分類</span><select class="note-filter" aria-label="メモ分類フィルター"></select></label>
+        </div>
+        <ol class="note-history"></ol>
+      </section>
+
+      <details class="alert-panel">
+        <summary><span><span class="block-icon">◇</span> 補助アラート</span><span class="alert-status"></span></summary>
+        <div class="conditions"></div>
+      </details>
+    </article>
+  </template>
+  <script src="script.js"></script>
+</body>
+</html>
